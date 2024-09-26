@@ -378,7 +378,49 @@ class RoadMaker():
         
         return A, TE, FE
 
-    def populate_skewed_adjacency_matrix(self, A, E, density=0.2, with_variation=True):
+    def populate_skewed_adjacency_matrix(self, A, density=0.2, with_variation=True):
+        # Set adjacency matrix constants. A is an N * N matrix
+        N = len(A)
+        maximum_edges = N*N - N
+        
+        # Exclude diagonal elements (self-loops)
+        mask_no_self_loops = ~np.eye(N, dtype=bool)
+        
+        # Available positions where edges can be added (A == 0 and not on the diagonal)
+        available_positions = np.where((A == 0) & mask_no_self_loops)
+        total_possible_edges = available_positions[0].size
+        
+        # Adjust density depending on with_variation flag
+        if ((with_variation == True) & (density<0.9)):
+            variation_factor = random.uniform(0.9,1.1)
+            density = density * variation_factor
+        
+        #Calculate edges to add depending on final density * maximum edges, minus the existing edges.
+        number_of_edges = math.floor(density * maximum_edges)
+        edges_to_add = number_of_edges - A.sum()
+
+        if edges_to_add <= 0:
+            print("Density is lower than minimum for a strongly connected adjacency matrix of this size. Returning A as is.")
+            return A
+
+        assert edges_to_add <= total_possible_edges, "Edges to add cannot exceed total possible edges"
+        
+        # Choose edges_to_add indices from total_possible_edges 
+        indices = np.random.choice(total_possible_edges, size=edges_to_add, replace=False)
+        
+        # Connect indices with row and column selections in available_positions
+        rows = available_positions[0][indices]
+        columns = available_positions[1][indices]
+        
+        # Update adjacency matrix
+        A[rows, columns] = 1
+
+        assert A.sum() == number_of_edges, "The right amount of edges must be added"
+
+        # Return adjacency matrix of size N with density as given 
+        return A
+    
+    def populate_skewed_adjacency_matrix_old(self, A, E, density=0.2, with_variation=True):
         # The total number of edges possible is NxN - N, as the diagonal is empty. The number of edges made in the skeleton graph is 2N-2. So the total possible number of edges addable is given as N^2 -3N + 2.
         #A should be a bare bones adjacency matrix
         #E should be a vector describing number of edges per node for A.
