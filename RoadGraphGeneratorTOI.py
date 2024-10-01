@@ -138,13 +138,24 @@ class GraphMaker():
 
     @staticmethod
     def generate_graphs(number, min_size, max_size, capacity_factor=1, density=0.04, min_length=1, max_length=10, rate_pop=0.4, max_pop=3, rate_poi=0.3, max_poi=3, min_cap=10, max_cap=100):
+        """This is the main algorithm described in the paper on TØIRoads
+        """
+        #Iterate over number of graphs in dataset
         for i in range(number):
+
+            #Instantiate RoadMaker
             r = RoadMaker()
-            r.make_network(min_size, max_size, min_length, max_length, rate_pop, max_pop, rate_poi, max_poi, min_cap, max_cap)
+
+            #Instantiate nodes, setting the features length, population, points of interest and capacity for each node.
+            r.make_network(min_size, max_size, min_length, max_length, rate_pop, max_pop, rate_poi, max_poi, min_cap, max_cap, capacity_factor)
+
+            #Make the strongly connected adjacency matrix
             r.set_neighbours(density)
-            
+
+            #Calculate road usage for each node of the graph
             RoadUsageGeneral(r.network)
-            CongestionCalculator.set_capacities(r.network, capacity_factor)
+
+            #Calculate congestion for each node of the graph
             CongestionCalculator.set_congestion(r.network)
             yield r.network
 
@@ -204,7 +215,7 @@ class RoadMaker():
     def __init__(self):
         pass
     
-    def make_network(self, min_size=4, max_size=10, min_length=1, max_length=10, rate_pop=0.4, max_pop=3, rate_poi=0.3, max_poi=3, min_cap=10, max_cap=100):
+    def make_network(self, min_size=4, max_size=10, min_length=1, max_length=10, rate_pop=0.4, max_pop=3, rate_poi=0.3, max_poi=3, min_cap=10, max_cap=100, capacity_factor):
         #This is the method that is used to make a road network.
         self.network_size = randint(min_size,max_size)
         self.network = []
@@ -224,7 +235,7 @@ class RoadMaker():
             road_length = randint(min_length,max_length)
             population = max(0,randint(zero_start_pop,max_pop + 1))
             poi = max(0,randint(zero_start_poi,max_poi + 1))
-            capacity = randint(min_cap, max_cap)
+            capacity = math.floor(randint(min_cap, max_cap)*capacity_factor)
             self.network.append(Node(i, road_length, population, poi, capacity))
             self.totpop += population
             self.totpoi += poi
