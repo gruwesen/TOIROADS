@@ -132,7 +132,6 @@ class GraphMaker():
 
             #This is copied from generate_graphs
             RoadUsageGeneral(r.network)
-            CongestionCalculator.set_capacities(r.network, capacity_factor)
             CongestionCalculator.set_congestion(r.network)
             yield r.network
 
@@ -215,8 +214,8 @@ class RoadMaker():
     def __init__(self):
         pass
     
-    def make_network(self, min_size=4, max_size=10, min_length=1, max_length=10, rate_pop=0.4, max_pop=3, rate_poi=0.3, max_poi=3, min_cap=10, max_cap=100, capacity_factor):
-        #This is the method that is used to make a road network.
+    def make_network(self, min_size=4, max_size=10, min_length=1, max_length=10, rate_pop=0.4, max_pop=3, rate_poi=0.3, max_poi=3, min_cap=10, max_cap=100, capacity_factor=1):
+        #This is the method that is used to make the nodes and features of a road network.
         self.network_size = randint(min_size,max_size)
         self.network = []
         self.totpop = 0
