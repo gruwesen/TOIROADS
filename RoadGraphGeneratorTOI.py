@@ -137,25 +137,27 @@ class GraphMaker():
 
     @staticmethod
     def generate_graphs(number, min_size, max_size, capacity_factor=1, density=0.04, min_length=1, max_length=10, rate_pop=0.4, max_pop=3, rate_poi=0.3, max_poi=3, min_cap=10, max_cap=100):
-        """This is the main algorithm described in the paper on TØIRoads
+        """This is described in the main algorithm in the paper on TØIRoads.
         """
         #Iterate over number of graphs in dataset
         for i in range(number):
 
             #Instantiate RoadMaker
             r = RoadMaker()
-
-            #Instantiate nodes, setting the features length, population, points of interest and capacity for each node.
+            
+            #Instantiate nodes, setting the features length, population, points of interest and capacity for each node. This corresponds to lines 4 and 5 in the algorithm.
             r.make_network(min_size, max_size, min_length, max_length, rate_pop, max_pop, rate_poi, max_poi, min_cap, max_cap, capacity_factor)
 
-            #Make the strongly connected adjacency matrix
+            #Make the strongly connected adjacency matrix. This corresponds to lines 6-9 in the algorithm.
             r.set_neighbours(density)
 
-            #Calculate road usage for each node of the graph
+            #Calculate road usage for each node of the graph. This corresponds to line 10 in the algorithm.
             RoadUsageGeneral(r.network)
 
-            #Calculate congestion for each node of the graph
+            #Calculate congestion for each node of the graph. This corresponds to line 11 in the algorithm.
             CongestionCalculator.set_congestion(r.network)
+
+            #Yield the network object. The function calling generate_graphs is responsible for gathering the networks in a dataset or something similar. 
             yield r.network
 
     @staticmethod
