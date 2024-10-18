@@ -112,13 +112,6 @@ class GraphMaker():
         pass
 
     @staticmethod
-    def generate_OD_graphs(number, min_size, max_size, density=0.04):
-        for i in range(number):
-            pass
-            #TODO should be an implementation of a similar road network graph with OD-matrix based traffic demand.
-
-
-    @staticmethod
     def generate_graph_variations(number, min_size, max_size, capacity_factor=1, density=0.04, max_step=2):
         #This function makes a single graph to start with, and then makes variations of up to max_step permutations.
         
@@ -232,7 +225,7 @@ class RoadMaker():
             raise ValueError("rate_pop and rate_poi need to be between 0 and 1, and should not approach either.")
 
         for i in range(self.network_size):
-            #min_length should really be 1 or more. TODO: Enforce.
+            #min_length should really be 1 or more.
             road_length = randint(min_length,max_length)
             population = max(0,randint(zero_start_pop,max_pop + 1))
             poi = max(0,randint(zero_start_poi,max_poi + 1))
@@ -266,6 +259,7 @@ class RoadMaker():
         return m
 
     def make_sane_adjacency(self,N):
+        #Legacy code
         #Create a symmetric, 0 diagonal, binary matrix to use as an adjecency matrix. 
         #Number of connections should be 5 or fewer, so the matrix is dense.
         a = np.random.randint(0,2,size=(N,N))
@@ -293,7 +287,7 @@ class RoadMaker():
                 m[i, row_index] = 0
 
         #Check for graph connection. If not connected, add an edge between a connected and a disconnected, and repeat.
-        #This part is probably causing trouble TODO
+        #This part is probably causing trouble
         visited = np.zeros(N)
         counter = 0
         while self.visit_nodes(randint(0,N-1), m, visited):
@@ -546,7 +540,7 @@ class RoadUsageGeneral():
     def roads_used(self):
         pathcounter = [0]*len(self.network)
         for pop_index in self.pops:
-            node = self.network[pop_index] #TODO: make a get_by_index for network?
+            node = self.network[pop_index] 
             routes = node.routes
             pop_value = node.features[1]
             for poi_index in self.pois:
