@@ -480,7 +480,7 @@ class RoadMaker():
         if directed:
             #A, E= self.make_skewed_adjacency_ground_up(self.network_size)
             A, TE, FE = self.make_skewed_adjacency_without_main_lane(self.network_size)
-            self.adj = self.populate_skewed_adjacency_matrix(A, TE, density)
+            self.adj = self.populate_skewed_adjacency_matrix(A, density)
         else:
             #self.adj = self.make_dense_adjacency(self.network_size)
             self.adj = self.make_sane_adjacency(self.network_size)
