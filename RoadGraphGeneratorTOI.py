@@ -519,7 +519,7 @@ class CongestionCalculator():
     def set_congestion(network, debug_mode=False):
         total_congestion = 0
         for node in network:
-            node.congestion = node.road_usage/node.capacity
+            node.congestion = node.road_usage/node.features[3]
             if node.congestion >= 1:
                 node.congested = 1
                 total_congestion += 1
