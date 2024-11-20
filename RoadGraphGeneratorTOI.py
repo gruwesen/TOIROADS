@@ -9,18 +9,89 @@ from torch_geometric.data import Data
 
 
 class TorchDataSetMaker():
+    """
+    A class to generate datasets for traffic congestion analysis.
+
+    This class contains methods to create datasets compatible with PyTorch Geometric
+    for modeling traffic flow and congestion in a network graph. Each node in the graph
+    has features, and the graph has edge connectivity and labels indicating congestion levels.
+    """
     def __init__(self):
+        """
+        Initializes the TorchDataSetMaker class.
+        """
         pass
 
+    @staticmethod
     def generate_torch_dataset_with_congestion(number, min_size, max_size, capacity_factor=1, density=0.04, min_length=1, max_length=10, rate_pop=0.4, max_pop=3, rate_poi=0.3, max_poi=3, min_cap=10, max_cap=100):
         """
-        This function generates a dataset with congestion data.
-        The node feature tensor (x) has 4 features per node per graph:
-            road_length, population, poi, capacity
-        The label tensor has three entries for each node for each graph: 
-            Road Usage: Measures static travel demand on the node. Is a count of shortest paths between population and pois going through the node.
-            Congestion: Is the quotient between road usage and node capacity
-            Congested: Is either 1 or 0, depending on Congestion >= 1 or not.
+        Generates a dataset with congestion data for traffic modeling.
+
+        Parameters
+        ----------
+        number : int
+            The number of graphs to generate.
+        min_size : int
+            The minimum number of nodes in each graph.
+        max_size : int
+            The maximum number of nodes in each graph.
+        capacity_factor : float, optional
+            A scaling factor for the road capacities. Default is 1.
+        density : float, optional
+            The density of edges in the graph. Default is 0.04.
+        min_length : float, optional
+            The minimum road length for nodes. Default is 1.
+        max_length : float, optional
+            The maximum road length for nodes. Default is 10.
+        rate_pop : float, optional
+            The rate of nodes having non-zero population. Default is 0.4.
+        max_pop : int, optional
+            The maximum population value per node. Default is 3.
+        rate_poi : float, optional
+            The rate of nodes having non-zero population. Default is 0.3.
+        max_poi : int, optional
+            The maximum number of points of interest per node. Default is 3.
+        min_cap : int, optional
+            The minimum capacity of roads. Default is 10.
+        max_cap : int, optional
+            The maximum capacity of roads. Default is 100.
+
+        Returns
+        -------
+        dataset : list of Data
+            A list of PyTorch Geometric Data objects, where each Data object represents
+            a graph. Each graph contains:
+                - x : torch.Tensor
+                    Node feature tensor of shape (num_nodes, 4), containing:
+                    road_length, population, points of interest, capacity.
+                - edge_index : torch.Tensor
+                    Edge index tensor of shape (2, num_edges), representing graph connectivity.
+                - y : torch.Tensor
+                    Node label tensor of shape (num_nodes, 3), containing:
+                    road_usage, congestion, congested (binary).
+
+        Notes
+        -----
+        The function uses `GraphMaker.generate_graphs` to generate synthetic graphs. Ensure that
+        `GraphMaker` is implemented and accessible in the same context.
+
+        Examples
+        --------
+        >>> maker = TorchDataSetMaker()
+        >>> dataset = maker.generate_torch_dataset_with_congestion(
+        ...     number=10,
+        ...     min_size=5,
+        ...     max_size=15,
+        ...     capacity_factor=1.2
+        ... )
+        >>> print(len(dataset))
+        10
+        >>> print(dataset[0].x.shape)
+        torch.Size([num_nodes, 4])
+        >>> print(dataset[0].edge_index.shape)
+        torch.Size([2, num_edges])
+        >>> print(dataset[0].y.shape)
+        torch.Size([num_nodes, 3])
         """
         dataset = []
         for network in GraphMaker.generate_graphs(number, min_size, max_size, capacity_factor, density, min_length, max_length, rate_pop, max_pop, rate_poi, max_poi, min_cap, max_cap):
