@@ -106,29 +106,82 @@ class TorchDataSetMaker():
     
 
 class GraphMaker():
+    """
+    A class for generating road graphs for traffic modeling.
+
+    This class provides a method to create graphs simulating road networks.
+    Each generated graph includes node features, a strongly connected adjacency
+    matrix, and calculated traffic metrics such as road usage and congestion.
+
+    Methods
+    -------
+    generate_graphs(number, min_size, max_size, capacity_factor=1, density=0.04, 
+                    min_length=1, max_length=10, rate_pop=0.4, max_pop=3, 
+                    rate_poi=0.3, max_poi=3, min_cap=10, max_cap=100):
+        Generates multiple road graphs with specified properties and traffic data.
+    """
     def __init__(self):
         pass
 
     @staticmethod
-    def generate_graph_variations(number, min_size, max_size, capacity_factor=1, density=0.04, max_step=2):
-        #This function makes a single graph to start with, and then makes variations of up to max_step permutations.
-        
-        original = RoadMaker()
-        original.make_network(min_size, max_size)
-        original.set_neighbours(density)
-        
-        for i in range(number):
-            r = RoadMaker()
-            r.make_variation(original.network, max_step)
-
-            #This is copied from generate_graphs
-            RoadUsageGeneral(r.network)
-            CongestionCalculator.set_congestion(r.network)
-            yield r.network
-
-    @staticmethod
     def generate_graphs(number, min_size, max_size, capacity_factor=1, density=0.04, min_length=1, max_length=10, rate_pop=0.4, max_pop=3, rate_poi=0.3, max_poi=3, min_cap=10, max_cap=100):
-        """This is described in the main algorithm in the paper on TØIRoads.
+        """
+        Generates road graphs with traffic and congestion data.
+
+        Parameters
+        ----------
+        number : int
+            The number of graphs to generate.
+        min_size : int
+            The minimum number of nodes in each graph.
+        max_size : int
+            The maximum number of nodes in each graph.
+        capacity_factor : float, optional
+            A scaling factor for node capacities. Default is 1.
+        density : float, optional
+            The density of the adjacency matrix (probability of edge creation). Default is 0.04.
+        min_length : int, optional
+            The minimum road length for nodes. Default is 1.
+        max_length : int, optional
+            The maximum road length for nodes. Default is 10.
+        rate_pop : float, optional
+            The rate of population per node. Default is 0.4.
+        max_pop : int, optional
+            The maximum population value per node. Default is 3.
+        rate_poi : float, optional
+            The rate of points of interest per node. Default is 0.3.
+        max_poi : int, optional
+            The maximum number of points of interest per node. Default is 3.
+        min_cap : int, optional
+            The minimum capacity of nodes. Default is 10.
+        max_cap : int, optional
+            The maximum capacity of nodes. Default is 100.
+
+        Yields
+        ------
+        network : list
+            A list of nodes representing the graph with updated features and connectivity.
+
+        Notes
+        -----
+        - This method corresponds to the main algorithm described in the TØIROADS paper.
+        - Each graph includes the following calculated traffic data:
+            - Road usage: Total demand passing through each node based on shortest paths.
+            - Congestion: Ratio of road usage to capacity for each node.
+        - The caller of this method is responsible for collecting and storing the yielded networks.
+
+        Example
+        -------
+        >>> gm = GraphMaker()
+        >>> graphs = list(gm.generate_graphs(
+        ...     number=10, 
+        ...     min_size=5, 
+        ...     max_size=15, 
+        ...     capacity_factor=1.2
+        ... ))
+        >>> print(len(graphs))
+        10
+        >>> graphs[0]  # Access the first generated graph
         """
         #Iterate over number of graphs in dataset
         for i in range(number):
@@ -136,65 +189,18 @@ class GraphMaker():
             #Instantiate RoadMaker
             r = RoadMaker()
             
-            #Instantiate nodes, setting the features length, population, points of interest and capacity for each node. This corresponds to lines 4 and 5 in the algorithm.
+            #Instantiate nodes and set features. This corresponds to lines 4 and 5 in the algorithm.
             r.make_network(min_size, max_size, min_length, max_length, rate_pop, max_pop, rate_poi, max_poi, min_cap, max_cap, capacity_factor)
 
-            #Make the strongly connected adjacency matrix. This corresponds to lines 6-9 in the algorithm.
+            #Generate adjacency matrix (strongly connected directed graph). This corresponds to lines 6-9 in the algorithm.
             r.set_neighbours(density)
 
-            #Calculate road usage for each node of the graph. This corresponds to line 10 in the algorithm.
+            #Calculate traffic data: road usage and congestion. This corresponds to line 10 and 11 in the algorithm.
             RoadUsageGeneral(r.network)
-
-            #Calculate congestion for each node of the graph. This corresponds to line 11 in the algorithm.
             CongestionCalculator.set_congestion(r.network)
 
-            #Yield the network object. The function calling generate_graphs is responsible for gathering the networks in a dataset or something similar. 
+            #Yield the constructed graph 
             yield r.network
-
-    @staticmethod
-    def generate_graphs_to_file(number, min_size, max_size, fpath="data/graph"):
-        for i in range(number):
-            r = RoadMaker()
-            r.make_network(min_size, max_size)
-            r.set_neighbours()
-            
-            #Mulig jeg kjører den her dobbelt/trippelt....
-            RoadUsage(r.network)
-            GraphMaker.graph_to_file(r.network, i, fpath)
-
-    @staticmethod
-    def graph_to_file(network, graph_number, fileuri="data/graph"):
-        nodes = ["{}\n".format(x.index + graph_number) for x in network]
-        scores = ["{}\n".format(x.score) for x in network]
-        features = ["{0}, {1}, {2}\n".format(*x.features) for x in network]
-        edges = ["{0} {1}\n".format(x.index + graph_number, y+graph_number) for x in network for y in x.neighbours]
-
-        graph_label = "{}\n".format(RoadUsage.get_network_label(network))
-
-        #graph_number = network.graph_number || not implemented
-
-
-        adjacency_file = fileuri + "_A.txt"
-        graph_indicator = fileuri + "_graph_indicator.txt"
-        graph_labels = fileuri + "_graph_labels.txt"
-        node_labels = fileuri + "_node_labels.txt"
-        node_attributes = fileuri + "_node_attributes.txt"
-        #graph_number = fileuri + "_graph_number.txt"
-
-        gn = ["{}\n".format(graph_number)]*len(nodes)
-
-        with open(adjacency_file, 'a') as f:
-            f.writelines(edges)
-        with open(graph_indicator, 'a') as f:
-            f.writelines(gn)
-        with open(graph_labels, 'a') as f:
-            f.write(graph_label)
-        with open(node_labels, 'a') as f:
-            f.writelines(scores)
-        with open(node_attributes, 'a') as f:
-            f.writelines(features)
-
-        #print("wrote {} to file".format(gn))
 
 
 class Node():
