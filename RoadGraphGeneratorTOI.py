@@ -104,47 +104,6 @@ class TorchDataSetMaker():
             dataset.append(Data(x = node_feature_tensor, edge_index = edge_index_tensor, y = node_label_tensor))
         return dataset
     
-    
-
-class DataSetMaker():
-    def __init__(self):
-        pass
-
-    @staticmethod
-    def generate_dataset(number, size, split):
-        #Generate a dataset on the form (TrainX, TrainY, TestX, TestY) where if size Train/Test = 80/20, the split value is 80.
-        training_cutoff = math.floor(number*split/100)
-        TrainX = []
-        TrainY = []
-        TestX = []
-        TestY = []
-        for network in GraphMaker.generate_graphs(training_cutoff, size, size):
-            TrainX.append(DataSetMaker.flatten_symmetric_graph(network))
-            TrainY.append(DataSetMaker.extract_y_values(network))
-        for network in GraphMaker.generate_graphs(number - training_cutoff, size, size):
-            TestX.append(DataSetMaker.flatten_symmetric_graph(network))
-            TestY.append(DataSetMaker.extract_y_values(network))
-        return TrainX, TrainY, TestX, TestY
-
-    @staticmethod
-    def extract_y_values(graph):
-        y = []
-        for node in graph:
-            y.append(node.road_usage)
-        return y
-
-    @staticmethod
-    def flatten_symmetric_graph(unflat_graph, number_of_features=3):
-        vector = []
-        size = len(unflat_graph)
-        no_edge = [0]*number_of_features*2
-        for node in unflat_graph[:-1]:
-            for x in range(node.index+1, size):
-                if x in node.neighbours:
-                    vector = vector + node.features + unflat_graph[x].features
-                else:
-                    vector = vector + no_edge
-        return vector
 
 class GraphMaker():
     def __init__(self):
