@@ -104,39 +104,7 @@ class TorchDataSetMaker():
             dataset.append(Data(x = node_feature_tensor, edge_index = edge_index_tensor, y = node_label_tensor))
         return dataset
     
-
-
-class RandomWalk():
-    def __init__(self):
-        pass
-
-    @staticmethod
-    def visit_neighbours(graph, index, steps, visit_counter):
-        active_node = graph[index]
-        for step in range(steps):
-            next_node = choice(active_node.neighbours)
-            visit_counter[next_node] += 1
-            active_node = graph[next_node]
-
-    @staticmethod
-    def random_walk_normalized(graph, steps):
-        n = len(graph)
-        visit_counter = [0]*n
-        for i in range(n):
-            RandomWalk.visit_neighbours(graph, i, steps, visit_counter)
-        normalized_visit_counter = [float(i)/sum(visit_counter) for i in visit_counter]
-        for node in graph:
-            node.features.append(normalized_visit_counter[node.index])
-
-    @staticmethod
-    def random_walk(graph, steps):
-        n = len(graph)
-        visit_counter = [0]*n
-        for i in range(n):
-            RandomWalk.visit_neighbours(graph, i, steps, visit_counter)
-        for node in graph:
-            node.features.append(visit_counter[node.index])
-
+    
 
 class DataSetMaker():
     def __init__(self):
