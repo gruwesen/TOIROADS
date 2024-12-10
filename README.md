@@ -22,3 +22,7 @@ TorchDatasetMaker.generate_graphs_with_congestion collects the output network in
 Import RoadGraphGeneratorTOI as RGG
 RGG.TorchDataSetMaker.generate_torch_dataset_with_congestion makes a list of pytorch geometric Data objects, each containing a graph dataset as per the graph generation specifications.
 It uses RGG.GraphMaker.generate_graphs to generate each single graph.
+
+## Associated Article
+This code is associated with the paper "TØIRoads: A Road Data Model Generation Tool", accepted for publication in TGDK, Volume 2, Issue 2 (2024 or 2025).
+DOI or publication details will be added when available.
